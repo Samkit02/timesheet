@@ -50,25 +50,28 @@ The Timesheet App helps individual contributors and administrators manage weekly
 - **Deployment**: Vercel  
 
 ## Project Structure
+```plaintext
 src/
-├─ pages/
-│ ├─ dashboard.js
-│ ├─ time-entry/index.js
-│ ├─ timesheet-history.js
-│ ├─ admin-dashboard.js
-│ ├─ login.js
-│ ├─ signup.js
-│ └─ profile.js
-├─ hooks/
-│ ├─ useAuth.js
-│ ├─ useAdminAuth.js
-│ └─ useProjects.js
-├─ lib/
-│ └─ firebase.js
-public/
-└─ assets/ (icons, avatar.jpg, etc.)
-styles/
-└─ globals.css
+├── pages/
+│   ├── dashboard.js
+│   ├── time-entry.js
+│   ├── time-history.js
+│   ├── admin-dashboard.js
+│   ├── login.js
+│   ├── signup.js
+│   └── profile.js
+├── hooks/
+│   ├── useAuth.js
+│   ├── useAdminAuth.js
+│   └── useProjects.js
+├── lib/
+│   └── firebase.js
+├── public/
+│   └── assets/
+│       └── avatar.jpg
+└── styles/
+    └── globals.css
+```
 
 ## Installation
 
