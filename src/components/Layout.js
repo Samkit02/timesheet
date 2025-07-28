@@ -33,7 +33,6 @@ export default function Layout({ children }) {
                     <nav className="hidden sm:flex space-x-8">
                         <Link href="/"><span className="hover:text-[var(--accent-color)]">Dashboard</span></Link>
                         <Link href="/time-history"><span className="hover:text-[var(--accent-color)]">Timesheets</span></Link>
-                        <Link href="/projects"><span className="hover:text-[var(--accent-color)]">Projects</span></Link>
                     </nav>
 
                     {/* Auth controls */}
