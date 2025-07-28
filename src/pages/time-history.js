@@ -1,8 +1,9 @@
-// src/pages/timesheet-history.js
+// src/pages/time-history.js
 import Head from 'next/head';
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
+import useProjects from '../hooks/useProjects';
 import useAuth from '../hooks/useAuth';
 import { auth, db } from '../lib/firebase';
 import {
@@ -14,7 +15,8 @@ import {
     doc
 } from 'firebase/firestore';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+// ↓ import the plugin function explicitly:
+import autoTable from 'jspdf-autotable';
 
 // parse YYYY-MM-DD into local Date
 function parseDate(str) {
@@ -34,18 +36,23 @@ function calcDayHours(dayEntry = {}) {
     if (!inT || !outT) return 0;
     const [h1, m1] = inT.split(':').map(Number);
     const [h2, m2] = outT.split(':').map(Number);
-    const mins = (h2 * 60 + m2) - (h1 * 60 + m1) - brk;
+    const mins = h2 * 60 + m2 - (h1 * 60 + m1) - brk;
     return mins > 0 ? +(mins / 60).toFixed(2) : 0;
 }
 
 export default function TimesheetHistoryPage() {
     const loadingAuth = useAuth();
     const router = useRouter();
+    const { projects, loading: projLoading } = useProjects();
 
     const [timesheets, setTimesheets] = useState([]);
     const [statusFilter, setStatusFilter] = useState('all');
     const [dateRange, setDateRange] = useState({ from: '', to: '' });
     const [loading, setLoading] = useState(true);
+
+    const projectMap = useMemo(() => {
+        return Object.fromEntries(projects.map(p => [p.id, p.name]));
+    }, [projects]);
 
     // Load all timesheets once
     useEffect(() => {
@@ -72,12 +79,13 @@ export default function TimesheetHistoryPage() {
             }
         }
         fetchHistory();
-    }, [loadingAuth]);
+    }, [loadingAuth, router]);
 
     // Apply status & date-range filters
     const filtered = useMemo(() => {
         return timesheets.filter(ts => {
-            if (statusFilter !== 'all' && ts.status !== statusFilter) return false;
+            if (statusFilter !== 'all' && ts.status !== statusFilter)
+                return false;
             const fromDate = dateRange.from ? parseDate(dateRange.from) : null;
             const toDate = dateRange.to ? parseDate(dateRange.to) : null;
             const start = parseDate(ts.weekStart);
@@ -101,15 +109,37 @@ export default function TimesheetHistoryPage() {
         }
     };
 
-    // Export CSV
+    // Export CSV with allocations
     const exportCSV = () => {
-        const header = ['Week Start', 'Week End', 'Total Hours', 'Status'];
+        const header = [
+            'Week Start',
+            'Week End',
+            'Total Hours',
+            'Status',
+            'Allocations'
+        ];
         const rows = filtered.map(ts => {
+            // compute total hours
             const total = Object.values(ts.entries || {}).reduce(
                 (sum, day) => sum + calcDayHours(day),
                 0
             );
-            return [ts.weekStart, ts.weekEnd, total.toFixed(2), ts.status];
+            // gather all allocations across the week
+            const allocList = [];
+            Object.values(ts.entries || {}).forEach(day => {
+                (day.allocations || []).forEach(a => {
+                    const name = projectMap[a.projectId] || a.projectId;
+                    allocList.push(`${name}: ${a.desc}`);
+                });
+            });
+            const allocations = allocList.join(' | ');
+            return [
+                ts.weekStart,
+                ts.weekEnd,
+                total.toFixed(2),
+                ts.status,
+                `"${allocations}"`
+            ];
         });
         const csv = [header, ...rows].map(r => r.join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
@@ -121,7 +151,7 @@ export default function TimesheetHistoryPage() {
         URL.revokeObjectURL(url);
     };
 
-    // Export PDF
+    // Export PDF with allocations
     const exportPDF = () => {
         const docPDF = new jsPDF();
         docPDF.text('Timesheets', 14, 20);
@@ -130,19 +160,43 @@ export default function TimesheetHistoryPage() {
                 (sum, day) => sum + calcDayHours(day),
                 0
             );
-            return [ts.weekStart, ts.weekEnd, total.toFixed(2), ts.status];
+            // same allocations logic as CSV
+            const allocList = [];
+            Object.values(ts.entries || {}).forEach(day => {
+                (day.allocations || []).forEach(a => {
+                    const name = projectMap[a.projectId] || a.projectId;
+                    allocList.push(`${name}: ${a.desc}`);
+                });
+            });
+            const allocations = allocList.join('\n');
+            return [
+                ts.weekStart,
+                ts.weekEnd,
+                total.toFixed(2),
+                ts.status,
+                allocations
+            ];
         });
-        docPDF.autoTable({
-            head: [['Week Start', 'Week End', 'Total Hrs', 'Status']],
+        autoTable(docPDF, {
+            head: [[
+                'Week Start',
+                'Week End',
+                'Total Hrs',
+                'Status',
+                'Allocations'
+            ]],
             body,
-            startY: 30
+            startY: 30,
+            styles: { cellWidth: 'wrap' }
         });
         docPDF.save('timesheets.pdf');
     };
 
     if (loadingAuth || loading) {
         return (
-            <div className="h-screen flex items-center justify-center">Loading…</div>
+            <div className="h-screen flex items-center justify-center">
+                Loading…
+            </div>
         );
     }
 
@@ -227,12 +281,16 @@ export default function TimesheetHistoryPage() {
                                             <td className="px-6 py-4 text-sm text-[var(--text-secondary)]">{total}</td>
                                             <td className="px-6 py-4 text-sm">
                                                 <span
-                                                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium
-                            ${ts.status === 'draft' ? 'bg-gray-500 text-white'
-                                                            : ts.status === 'submitted' ? 'bg-yellow-600 text-white'
-                                                                : 'bg-red-600 text-white'}`}
+                                                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${ts.status === 'approved'
+                                                            ? 'bg-green-600 text-white'
+                                                            : ts.status === 'rejected'
+                                                                ? 'bg-red-600 text-white'
+                                                                : ts.status === 'submitted'
+                                                                    ? 'bg-yellow-600 text-white'
+                                                                    : 'bg-gray-500 text-white'
+                                                        }`}
                                                 >
-                                                    {ts.status}
+                                                    {ts.status.charAt(0).toUpperCase() + ts.status.slice(1)}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right text-sm font-medium space-x-4">
