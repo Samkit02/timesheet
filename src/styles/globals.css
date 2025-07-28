@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary-color: #53d22c;
+  --background-color: #121212;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --accent-color: #6ee7b7;
 }
 
 @theme inline {
@@ -19,8 +24,22 @@
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  body {
+    @apply font-sans bg-[var(--background-color)] text-[var(--text-primary)];
+  }
+}
+
+@layer components {
+  .button_primary {
+    @apply bg-[var(--primary-color)] text-gray-900 py-2 px-4 rounded-full hover:bg-[var(--accent-color)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)];
+  }
+
+  .button_secondary {
+    @apply bg-gray-800 text-[var(--text-primary)] py-2 px-4 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500;
+  }
+
+  .input {
+    @apply bg-gray-800 text-[var(--text-primary)] border border-gray-700 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)];
+  }
 }

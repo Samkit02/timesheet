@@ -1,40 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Timesheet App
 
-## Getting Started
+A web-based application for tracking work hours, allocating project time, and submitting timesheets for approval—built with Next.js, Firebase, and Tailwind CSS.
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The Timesheet App helps individual contributors and administrators manage weekly timesheets through:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Daily time entry with automatic hour calculations  
+- Project-based time allocations with descriptions  
+- Draft saving, submission workflows, and real-time admin review  
+- Exportable history (PDF/CSV) and notification reminders  
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Features
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+- **Weekly Timesheet Management**  
+  Enter and calculate daily In/Out times, breaks, and overtime in a week overview form.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+- **Project Allocations**  
+  Assign hours to active projects via a type-ahead dropdown and required description field.
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Validation**  
+  Client-side checks ensure that allocated hours never exceed worked hours before submission.
 
-## Learn More
+- **Draft & Submission Workflow**  
+  Save as draft or, once the week has ended, submit for approval. Submissions are locked until week-end to prevent premature sends.
 
-To learn more about Next.js, take a look at the following resources:
+- **Notifications & Reminders**  
+  Users receive in-app alerts as deadlines approach; admins can send push notifications upon approval.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+- **Timesheet History & Export**  
+  View past weeks, filter by status or date, delete drafts, and export history to CSV or PDF.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Admin Portal**  
+  Approve or reject submitted timesheets in real time, add review comments, and track metrics like total hours and pending counts.
 
-## Deploy on Vercel
+- **Authentication & Security**  
+  Firebase Auth protects all routes, with role checks for admins. Firestore stores user profiles, timesheets, and notifications.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Responsive Design**  
+  Tailwind CSS ensures a consistent experience across desktop and mobile devices.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## Technologies Used
+
+- **Frontend**: Next.js • React  
+- **Backend & Database**: Firebase Auth • Firestore  
+- **Styling**: Tailwind CSS  
+- **State Management**: React Hooks (`useAuth`, `useProjects`, `useAdminAuth`)  
+- **PDF/CSV Export**: `jspdf` & `jspdf-autotable`  
+- **Deployment**: Vercel  
+
+## Project Structure
+src/
+├─ pages/
+│ ├─ dashboard.js
+│ ├─ time-entry/index.js
+│ ├─ timesheet-history.js
+│ ├─ admin-dashboard.js
+│ ├─ login.js
+│ ├─ signup.js
+│ └─ profile.js
+├─ hooks/
+│ ├─ useAuth.js
+│ ├─ useAdminAuth.js
+│ └─ useProjects.js
+├─ lib/
+│ └─ firebase.js
+public/
+└─ assets/ (icons, avatar.jpg, etc.)
+styles/
+└─ globals.css
+
+## Installation
+
+1. **Clone the repo**  
+   ```sh
+   git clone https://github.com/your-username/timesheet-app.git
+   cd timesheet-app
+
+2. Install dependencies
+    ```sh
+    npm install
+
+3. Configure environment variables
+    - Create a .env.local in the project root with your Firebase credentials:
+    ```sh
+    NEXT_PUBLIC_FIREBASE_API_KEY=…
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=…
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID=…
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=…
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=…
+    NEXT_PUBLIC_FIREBASE_APP_ID=…
+
+4. Run the development server
+    ```sh
+    npm run dev
+
+5. Open in browser
+    - Navigate to http://localhost:3000
+
+## Deployment
+1. Push your code to GitHub.
+2. Connect the repository in Vercel.
+3. Add the same environment variables in the Vercel dashboard.
+4. Deploy with a single click.
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch (git checkout -b feature/YourFeature)
+3. Commit your changes (git commit -m 'Add YourFeature')
+4. Push to your fork (git push origin feature/YourFeature)
+5. Open a Pull Request detailing your improvements
+
+## Questions or feedback?
+- Reach out at fkbhimani@gmail.com
