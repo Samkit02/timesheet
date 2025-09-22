@@ -113,6 +113,3 @@ src/
 3. Commit your changes (git commit -m 'Add YourFeature')
 4. Push to your fork (git push origin feature/YourFeature)
 5. Open a Pull Request detailing your improvements
-
-## Questions or feedback?
-- Reach out at fkbhimani@gmail.com
